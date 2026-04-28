@@ -1,0 +1,33 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# =========================
+# 1. ARCHIVOS DE DATOS
+# =========================
+# Ignorar todo el contenido dentro de raw y staging (CSVs, Excel, etc.)
+/data/raw/*
+/data/staging/*
+
+# EXCEPCIÓN: No ignorar los archivos .gitkeep para conservar la estructura de carpetas
+!/data/raw/.gitkeep
+!/data/staging/.gitkeep
+
+# =========================
+# 2. ENTORNO PYTHON
+# =========================
+# Caché compilada
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales (por si crea en el futuro)
+venv/
+env/
+.venv/
+
+# =========================
+# 3. CONFIGURACIONES DE IDE
+# =========================
+# Ignorar la carpeta de configuración de PyCharm / JetBrains
+.idea/
