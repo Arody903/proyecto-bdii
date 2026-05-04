@@ -59,7 +59,7 @@ CREATE TABLE Fact_Quejas (
 ) PARTITION BY RANGE (id_fecha_creacion);
 
 
--- 3. CREACIÓN DE LAS PARTICIONES (EJEMPLO MENSUAL)
+-- 3. CREACIÓN DE LAS PARTICIONES
 -- --------------------------------------------------------------------
 
 -- Particiones con funcion anonima
