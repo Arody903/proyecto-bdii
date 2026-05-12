@@ -1,5 +1,11 @@
--- 1. CREACIÓN DE LAS DIMENSIONES
--- --------------------------------------------------------------------
+
+DROP TABLE IF EXISTS Fact_Quejas CASCADE;
+DROP TABLE IF EXISTS Dim_Tiempo CASCADE;
+DROP TABLE IF EXISTS Dim_Agencia CASCADE;
+DROP TABLE IF EXISTS Dim_Tipo_Queja CASCADE;
+DROP TABLE IF EXISTS Dim_Estado_Resolucion CASCADE;
+DROP TABLE IF EXISTS Dim_Distrito CASCADE;
+
 
 CREATE TABLE Dim_Tiempo (
     id_fecha INT PRIMARY KEY,
@@ -29,13 +35,10 @@ CREATE TABLE Dim_Estado_Resolucion (
     tipo_cierre VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE Dim_distrito (
+CREATE TABLE Dim_Distrito (
     id_distrito INT PRIMARY KEY,
     nombre_distrito VARCHAR(100) NOT NULL
 );
-
--- 2. CREACIÓN DE LA TABLA DE HECHOS (PARTICIONADA)
--- --------------------------------------------------------------------
 
 CREATE TABLE Fact_Quejas (
     unique_key BIGINT NOT NULL,
@@ -48,21 +51,18 @@ CREATE TABLE Fact_Quejas (
     tiempo_resolucion_horas NUMERIC(10, 2),
     cerrado_mismo_dia BOOLEAN NOT NULL,
     
-    PRIMARY KEY (unique_key, id_fecha_creacion),
-    
-    FOREIGN KEY (id_fecha_creacion) REFERENCES Dim_Tiempo(id_fecha),
-    FOREIGN KEY (id_fecha_cierre) REFERENCES Dim_Tiempo(id_fecha),
-    FOREIGN KEY (id_agencia) REFERENCES Dim_Agencia(id_agencia),
-    FOREIGN KEY (id_tipo_queja) REFERENCES Dim_Tipo_Queja(id_tipo_queja),
-    FOREIGN KEY (id_estado_resolucion) REFERENCES Dim_Estado_Resolucion(id_estado_resolucion),
-    FOREIGN KEY (id_distrito) REFERENCES Dim_distrito(id_distrito)
+    PRIMARY KEY (unique_key, id_fecha_creacion)
 ) PARTITION BY RANGE (id_fecha_creacion);
 
+-- LLAVES FORÁNEAS (EJECUCIÓN EN LOAD PARA ACELERAR CARGA) ------------
+-- ALTER TABLE Fact_Quejas
+--                     ADD CONSTRAINT fk_tiempo_creacion FOREIGN KEY (id_fecha_creacion) REFERENCES Dim_Tiempo(id_fecha),
+--                     ADD CONSTRAINT fk_tiempo_cierre FOREIGN KEY (id_fecha_cierre) REFERENCES Dim_Tiempo(id_fecha),
+--                     ADD CONSTRAINT fk_agencia FOREIGN KEY (id_agencia) REFERENCES Dim_Agencia(id_agencia),
+--                     ADD CONSTRAINT fk_tipo_queja FOREIGN KEY (id_tipo_queja) REFERENCES Dim_Tipo_Queja(id_tipo_queja),
+--                     ADD CONSTRAINT fk_estado_resolucion FOREIGN KEY (id_estado_resolucion) REFERENCES Dim_Estado_Resolucion(id_estado_resolucion),
+--                     ADD CONSTRAINT fk_distrito FOREIGN KEY (id_distrito) REFERENCES Dim_Distrito(id_distrito);
 
--- 3. CREACIÓN DE LAS PARTICIONES
--- --------------------------------------------------------------------
-
--- Particiones con funcion anonima
 DO $$
 DECLARE
     fecha_inicio DATE := DATE '2010-01-01';
@@ -88,9 +88,3 @@ BEGIN
 END $$;
 
 CREATE TABLE fact_quejas_default PARTITION OF Fact_Quejas DEFAULT;
-
-
--- 4. CREACIÓN DE ÍNDICES
--- --------------------------------------------------------------------
---
-
