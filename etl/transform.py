@@ -1,9 +1,13 @@
 import pandas as pd
 import numpy as np
+import time
 
 
 def run_transform():
     print("Iniciando Transformación de Datos...")
+
+    start_time = time.time()
+
     df = pd.read_csv('../data/staging/extracted_311.csv')
 
     print("Limpiando fechas y calculando métricas...")
@@ -25,17 +29,25 @@ def run_transform():
 
 
     # Métricas (Preguntas 1, 3 y 4)
+    print("Calculando métricas...")
+
     df['tiempo_resolucion_horas'] = (df['closed_date'] - df['created_date']).dt.total_seconds() / 3600
     df['tiempo_resolucion_horas'] = df['tiempo_resolucion_horas'].round(2)
-    df['cerrado_mismo_dia'] = df['created_date'].dt.date == df['closed_date'].dt.date
+    df['cerrado_mismo_dia'] = df['created_date'].dt.normalize() == df['closed_date'].dt.normalize()
 
     # Pregunta 3 - tipos de cierres
+    res_unicas = df['resolution_description'].dropna().unique()
+    res_series = pd.Series(res_unicas, index=res_unicas)
+
     condiciones = [
-        df['resolution_description'].str.contains('insufficient|not be processed|no contact', na=False, case=False),
-        df['resolution_description'].str.contains('duplicate', na=False, case=False),
-        df['resolution_description'].str.contains('corrected|responded|resolved', na=False, case=False)
+        res_series.str.contains('insufficient|not be processed|no contact', na=False, case=False),
+        res_series.str.contains('duplicate', na=False, case=False),
+        res_series.str.contains('corrected|responded|resolved', na=False, case=False)
     ]
-    df['tipo_cierre'] = np.select(condiciones, ['Falta de Info', 'Duplicado', 'Resolución Real'], default='Otro')
+    resultados_unicos = np.select(condiciones, ['Falta de Info', 'Duplicado', 'Resolución Real'], default='Otro')
+
+    dict_resolucion = dict(zip(res_unicas, resultados_unicos))
+    df['tipo_cierre'] = df['resolution_description'].map(dict_resolucion).fillna('Otro')
 
     # ---------------------------------------------------------
     # CONSTRUCCIÓN DE TABLAS DE DIMENSIONES
@@ -77,6 +89,19 @@ def run_transform():
     dim_tiempo['estacion'] = np.select(cond_estacion, ['Invierno', 'Primavera', 'Verano', 'Otoño'],
                                        default='Desconocido')
 
+    # Reordenar las columnas para hacer match con el esquema de PostgreSQL
+    orden_columnas_tiempo = [
+        'id_fecha',
+        'fecha_completa',
+        'anio',
+        'mes',
+        'nombre_mes',
+        'dia_semana',
+        'es_fin_semana',
+        'estacion'
+    ]
+    dim_tiempo = dim_tiempo[orden_columnas_tiempo]
+
     # Limpieza borough
     df['borough'] = df['borough'].fillna('Sin Especificar')
     df['borough'] = df['borough'].str.strip()
@@ -93,18 +118,28 @@ def run_transform():
     print("Mapeando Fact Table (Uniendo IDs)...")
 
     # Unir IDs de Agencia
-    fact_df = df.merge(dim_agencia, left_on='agency', right_on='siglas', how='left')
+    dict_agencia = dim_agencia.set_index(['siglas', 'nombre_completo'])['id_agencia'].to_dict()
+    df = df.merge(dim_agencia,
+                       left_on=['agency', 'agency_name'],
+                       right_on=['siglas', 'nombre_completo'],
+                       how='left')
     # Unir IDs de Tipo Queja
-    fact_df = fact_df.merge(dim_tipo_queja, left_on='complaint_type', right_on='descripcion_queja', how='left')
+    dict_tipo_queja = dict(zip(dim_tipo_queja['descripcion_queja'], dim_tipo_queja['id_tipo_queja']))
+    df['id_tipo_queja'] = df['complaint_type'].map(dict_tipo_queja)
     # Unir IDs de Resolución
-    fact_df = fact_df.merge(dim_estado_resolucion, left_on=['status', 'tipo_cierre'],
+    df = df.merge(dim_estado_resolucion, left_on=['status', 'tipo_cierre'],
                             right_on=['status_ticket', 'tipo_cierre'], how='left')
     # Unir IDs de Borough
-    fact_df = fact_df.merge(dim_borough, left_on='borough', right_on='nombre_distrito', how='left')
+    dict_distrito = dict(zip(dim_borough['nombre_distrito'], dim_borough[
+        'id_distrito']))  # Asumiendo que tu df de dimensiones se llama dim_borough en python
+    df['id_distrito'] = df['borough'].map(dict_distrito)
 
     # Crear IDs de fecha
-    fact_df['id_fecha_creacion'] = fact_df['created_date'].dt.strftime('%Y%m%d').astype(float).fillna(0).astype(int)
-    fact_df['id_fecha_cierre'] = fact_df['closed_date'].dt.strftime('%Y%m%d').astype(float).fillna(0).astype(int)
+    df['id_fecha_creacion'] = (df['created_date'].dt.year * 10000 + df['created_date'].dt.month * 100 + df[
+        'created_date'].dt.day).fillna(0).astype(int)
+    df['id_fecha_cierre'] = (
+                df['closed_date'].dt.year * 10000 + df['closed_date'].dt.month * 100 + df['closed_date'].dt.day).fillna(
+        0).astype(int)
 
     # Seleccionar solo las columnas finales para la BD
     columnas_fact = [
@@ -113,7 +148,7 @@ def run_transform():
         'id_distrito',
         'tiempo_resolucion_horas', 'cerrado_mismo_dia'
     ]
-    fact_quejas = fact_df[columnas_fact]
+    fact_quejas = df[columnas_fact]
 
     # ---------------------------------------------------------
     # EXPORTAR A STAGING (Listos para PostgreSQL)
@@ -126,7 +161,13 @@ def run_transform():
     dim_borough.to_csv('../data/staging/Dim_Distrito.csv', index=False)
     fact_quejas.to_csv('../data/staging/Fact_Quejas.csv', index=False)
 
+    end_time = time.time()
+    duration = end_time - start_time
+
+    print("-" * 30)
     print("¡Transformación Completada! Los archivos están listos en la carpeta staging.")
+    print(f"Tiempo total de transformación: {duration:.2f} segundos ({duration / 60:.2f} minutos)")
+    print("-" * 30)
 
 
 if __name__ == "__main__":
