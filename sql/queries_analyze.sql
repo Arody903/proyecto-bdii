@@ -1,5 +1,4 @@
--- ¿Cuál es el tiempo promedio de resolución de quejas
--- por agencia y cómo ha variado en el tiempo?
+
 EXPLAIN ANALYZE
 SELECT a.nombre_completo,
        t.anio,
@@ -12,8 +11,7 @@ JOIN Dim_Tiempo t
 GROUP BY a.nombre_completo, t.anio
 ORDER BY promedio_horas DESC;
 
--- ¿Existen patrones estacionales en los tipos de
--- queja más frecuentes de la ciudad?
+
 EXPLAIN ANALYZE
 SELECT t.nombre_mes,
        tq.descripcion_queja,
@@ -33,8 +31,7 @@ WHERE tq.descripcion_queja IN (
 GROUP BY t.nombre_mes, tq.descripcion_queja
 ORDER BY total_quejas DESC;
 
--- ¿Qué proporción de quejas se resuelve el mismo día
--- y cómo varía según el tipo de cierre?
+
 EXPLAIN ANALYZE
 SELECT er.tipo_cierre,
        f.cerrado_mismo_dia,
@@ -45,8 +42,7 @@ JOIN Dim_Estado_Resolucion er
 GROUP BY er.tipo_cierre, f.cerrado_mismo_dia
 ORDER BY total_quejas DESC;
 
--- ¿Cómo varía el volumen de quejas entre distritos
--- y períodos de tiempo determinados?
+
 EXPLAIN ANALYZE
 SELECT d.nombre_distrito,
        t.anio,
@@ -61,8 +57,7 @@ WHERE f.id_fecha_creacion BETWEEN 20190101 AND 20191231
 GROUP BY d.nombre_distrito, t.anio, t.mes
 ORDER BY total_quejas DESC;
 
--- evidencia tecnica
--- Partition Pruning
+
 EXPLAIN ANALYZE
 SELECT COUNT(*)
 FROM Fact_Quejas
