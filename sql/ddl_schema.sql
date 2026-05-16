@@ -90,24 +90,18 @@ END $$;
 CREATE TABLE fact_quejas_default PARTITION OF Fact_Quejas DEFAULT;
 
 
---CREACION DE INDICES, OPTIMIZAR OLAP
 
--- indice para filtros temporales y partition pruning
 CREATE INDEX idx_fact_fecha_creacion
 ON Fact_Quejas(id_fecha_creacion);
 
--- indice para analisis de tipos de queja
 CREATE INDEX idx_fact_tipo_queja
 ON Fact_Quejas(id_tipo_queja);
 
--- indice compuesto para consultas por distrito y fecha
 CREATE INDEX idx_fact_distrito_fecha
 ON Fact_Quejas(id_distrito, id_fecha_creacion);
 
--- indice para analisis de desempeño por agencia
 CREATE INDEX idx_fact_agencia
 ON Fact_Quejas(id_agencia);
 
--- indice para consultas de cierres el mismo dia
 CREATE INDEX idx_fact_cierre_mismo_dia
 ON Fact_Quejas(cerrado_mismo_dia);
