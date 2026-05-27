@@ -91,17 +91,17 @@ CREATE TABLE fact_quejas_default PARTITION OF Fact_Quejas DEFAULT;
 
 
 
-CREATE INDEX idx_fact_fecha_creacion
-ON Fact_Quejas(id_fecha_creacion);
+-- CREATE INDEX idx_fact_fecha_creacion
+-- ON Fact_Quejas(id_fecha_creacion);
 
-CREATE INDEX idx_fact_tipo_queja
-ON Fact_Quejas(id_tipo_queja);
+-- CREATE INDEX idx_fact_tipo_queja
+-- ON Fact_Quejas(id_tipo_queja);
 
-CREATE INDEX idx_fact_distrito_fecha
-ON Fact_Quejas(id_distrito, id_fecha_creacion);
+-- CREATE INDEX idx_fact_distrito_fecha
+-- ON Fact_Quejas(id_distrito, id_fecha_creacion);
 
-CREATE INDEX idx_fact_agencia
-ON Fact_Quejas(id_agencia);
+-- CREATE INDEX idx_fact_agencia
+-- ON Fact_Quejas(id_agencia);
 
-CREATE INDEX idx_fact_cierre_mismo_dia
-ON Fact_Quejas(cerrado_mismo_dia);
+-- CREATE INDEX idx_fact_cierre_mismo_dia
+-- ON Fact_Quejas(cerrado_mismo_dia);

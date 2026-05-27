@@ -73,13 +73,25 @@ def main():
         cur.execute(constraints_sql)
         print("   ✓ Llaves foráneas creadas y validadas correctamente.")
 
-        # Descomentar para ejecución de índices
-        # print("Creando índices...")
-        # indexes_sql = """
-        #                     SCRIPT SQL PARA CREACIÓN DE ÍNDICES
-        #                 """
-        # cur.execute(indexes_sql)
-        # print("   ✓ Índices creados correctamente.")
+        print("Creando índices...")
+        indexes_sql = """
+                                    CREATE INDEX idx_fact_fecha_creacion
+                                    ON Fact_Quejas(id_fecha_creacion);
+
+                                    CREATE INDEX idx_fact_tipo_queja
+                                    ON Fact_Quejas(id_tipo_queja);
+
+                                    CREATE INDEX idx_fact_distrito_fecha
+                                    ON Fact_Quejas(id_distrito, id_fecha_creacion);
+
+                                    CREATE INDEX idx_fact_agencia
+                                    ON Fact_Quejas(id_agencia);
+
+                                    CREATE INDEX idx_fact_cierre_mismo_dia
+                                    ON Fact_Quejas(cerrado_mismo_dia);
+                                """
+        cur.execute(indexes_sql)
+        print("   ✓ Índices creados correctamente.")
 
         end_time = time.time()
 
