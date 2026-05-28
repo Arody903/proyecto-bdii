@@ -1,0 +1,19 @@
+# python y librerías
+
+# windows
+
+
+# Linux
+sudo apt update
+sudo apt install python3 python3-pip python3-venv
+sudo apt-get install unrar
+
+# Crear el entorno virtual
+python3 -m venv mi_entorno
+
+# Activar el entorno virtual
+source mi_entorno/bin/activate
+
+# instalación de bibliotecas en entorno virtual
+pip install polars
+pip install rarfile requests
