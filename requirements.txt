@@ -1,19 +1,14 @@
-# python y librerías
+# Manipulación y análisis de datos (Unificado)
+pandas>=2.0.0
+numpy>=1.24.0
+polars>=0.19.0
 
-# windows
+# Descarga y manejo de archivos comprimidos
+requests>=2.31.0
+rarfile>=4.0
 
+# Conexión a Base de Datos (PostgreSQL)
+psycopg2-binary>=2.9.0
 
-# Linux
-sudo apt update
-sudo apt install python3 python3-pip python3-venv
-sudo apt-get install unrar
-
-# Crear el entorno virtual
-python3 -m venv mi_entorno
-
-# Activar el entorno virtual
-source mi_entorno/bin/activate
-
-# instalación de bibliotecas en entorno virtual
-pip install polars
-pip install rarfile requests
+# Gestión de credenciales seguras (¡Altamente recomendado!)
+python-dotenv>=1.0.0
