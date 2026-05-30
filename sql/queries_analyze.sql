@@ -12,7 +12,8 @@ WITH Estadisticas_Anuales AS (
     FROM Fact_Quejas f
     JOIN Dim_Agencia a ON f.id_agencia = a.id_agencia
     JOIN Dim_Tiempo t ON f.id_fecha_creacion = t.id_fecha
-    WHERE f.id_fecha_creacion >= 20180101
+    WHERE f.id_distrito = 1
+    AND f.id_fecha_creacion >= 20180101
     GROUP BY a.nombre_completo, t.anio
 ),
 Comparacion_Anual AS (
@@ -118,6 +119,7 @@ WITH Agrupacion_Diaria AS (
     JOIN Dim_Agencia a ON f.id_agencia = a.id_agencia
     JOIN Dim_Tiempo t ON f.id_fecha_creacion = t.id_fecha
     WHERE a.siglas IN ('NYPD', 'HPD')
+    AND f.id_distrito = 3
     GROUP BY a.siglas, t.es_fin_semana, f.id_fecha_creacion
 )
 SELECT siglas,
