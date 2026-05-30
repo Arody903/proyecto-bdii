@@ -84,11 +84,6 @@ def main():
                                     CREATE INDEX idx_fact_distrito_fecha
                                     ON Fact_Quejas(id_distrito, id_fecha_creacion);
 
-                                    CREATE INDEX idx_fact_agencia
-                                    ON Fact_Quejas(id_agencia);
-
-                                    CREATE INDEX idx_fact_cierre_mismo_dia
-                                    ON Fact_Quejas(cerrado_mismo_dia);
                                 """
         cur.execute(indexes_sql)
         print("   ✓ Índices creados correctamente.")
