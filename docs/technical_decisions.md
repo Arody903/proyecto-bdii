@@ -170,7 +170,7 @@ ORDER BY cerrado_mismo_dia DESC, total_quejas DESC;
 
 **Pregunta de Negocio:** ¿Qué proporción de quejas se cierran el mismo día que son creadas?
 
-* **Índices Utilizados:** `idx_fact_cierre_mismo_dia`, `idx_fact_fecha_creacion`
+* **Índices Utilizados:** `idx_fact_fecha_creacion`
 * **Motivo Técnico:** Las funciones de ventana analíticas (`OVER (PARTITION BY...)`) requieren que los datos estén previamente ordenados o agrupados en memoria. El índice booleano sobre `cerrado_mismo_dia` pre-ordena lógicamente estas clasificaciones, permitiendo que el motor calcule las proporciones relativas y el `GROUP BY` inicial con un uso mínimo de la memoria de trabajo (`work_mem`). El índice de fecha asiste descartando el historial previo a 2017.
 
 **Comparativa de Rendimiento:**
@@ -217,7 +217,7 @@ ORDER BY siglas, es_fin_semana DESC;
 
 **Pregunta de Negocio:** ¿Cómo varía el volumen de quejas entre días hábiles y fines de semana para NYPD y HPD?
 
-* **Índice Utilizado:** `idx_fact_agencia`
+* **Índice Utilizado:** `idx_fact_distrito_fecha`
 * **Motivo Técnico:** La consulta limita el análisis exclusivamente a dos agencias (`WHERE a.siglas IN ('NYPD', 'HPD')`). En lugar de escanear toda la tabla de hechos, el optimizador evalúa primero la dimensión, obtiene los IDs numéricos de ambas agencias, y utiliza el índice para realizar un *Bitmap Index Scan*, extrayendo de la tabla particionada únicamente los bloques físicos que pertenecen a esas dos instituciones.
 
 **Comparativa de Rendimiento:**
